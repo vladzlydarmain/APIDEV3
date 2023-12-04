@@ -1,20 +1,22 @@
-require('dotenv').config()
+// require('dotenv').config()
 const express = require('express')
 const db = require('./db.js')
 
 const app = express();
 
-const routerTest = require('./routes/test.js')
 const routerUser = require('./routes/user.js')
+const routerCategory = require('./routes/category.js')
+const routerQuestion = require('./routes/question.js')
 
 app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/user', routerUser)
-app.use('/test', routerTest)
+app.use('/category', routerCategory)
+app.use('/question', routerQuestion)
 
-const port = process.env.PORT
+const port = process.env.PORT  
 
 app.listen(port, () => {
     console.log('listening on port')
@@ -22,3 +24,4 @@ app.listen(port, () => {
 
 
 
+ 

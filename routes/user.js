@@ -1,60 +1,60 @@
 const express = require('express');
 
+const test = require('./test.js')
+
 const db = require('../db.js')
 
 const { v4 } = require('uuid')
 
 const router = express.Router();
 
-function checkAPIKey(callback){
-    if(req.headers.apikey){
-        db.getUserByApiKey(req.headers.apikey, (user) => {
-            if(user.length > 0){
-                callback(user)
-            } else {
-                res.json({
-                    code:403,
-                    message:"APIKey is invalid"
-                }).status(403)
-            }
-        })
-    } else {
-        res.json({
-            code:403,
-            message:"APIKey required"
-        }).status(403)
-    }
-}
-
 router.post('/', (req, res) => {
-    checkAPIKey((user)=>{
-        const apiKey = v4()
-        const username  = req.body.username
-        const firstName  = req.body.firstname
-        const lastName = req.body.lastname
-        const isAdmin = req.body.isAdmin
-        if (username){
+    test.checkAPIKey(req,res,(user)=>{
+        if (user[0].isadmin){
+            const apiKey = v4()
+            const username  = req.body.username
+            const firstName  = req.body.firstname
+            const lastName = req.body.lastname
+            const isAdmin = req.body.isAdmin
+            if (!username){
+                return res.json({
+                    code:400,
+                    message:"Username must exist"
+                }).status(400)
+                
+            } else if(`${isAdmin}` == 'undefined'){
+                return res.json({
+                    code:400,
+                    message:"isAdmin must exist"
+                }).status(400)
+            } else if(typeof isAdmin != "boolean"){
+                return res.json({
+                    code:400,
+                    message:"isAdmin must be bool" 
+                }).status(400)
+            }   
             db.addUser(username,firstName,lastName,apiKey,isAdmin)
             res.json({
                 code:201,
-                key: apiKey
+                key: apiKey 
             }).status(201)
         } else {
             res.json({
-                code:400,
-                message:"Username must exist"
-            }).status(400)
+                code:403,
+                message:"You don't have access"
+            }).status(403)
         }
+        
     })
 })
 
 router.get('/', (req, res) => {
-    checkAPIKey((user)=>{
+    test.checkAPIKey(req,res,(user)=>{
         if (user[0].isadmin){
             db.getAllUsers((resDB) => {
                 res.json(resDB).status(200)
             })
-        } else {
+        } else { 
             res.json({
                 code:403,
                 message:"You don't have access"
@@ -64,7 +64,7 @@ router.get('/', (req, res) => {
 })
 
 router.get('/:id', (req, res) => {
-    checkAPIKey((user)=>{
+    test.checkAPIKey(req,res,(user)=>{
         if (user[0].isadmin){
             db.getUserById(req.params.id,(resDB)=>{
                 if(resDB.length > 0){
@@ -86,7 +86,7 @@ router.get('/:id', (req, res) => {
 })
 
 router.delete('/:id', (req, res) => {
-    checkAPIKey((user)=>{
+    test.checkAPIKey(req,res,(user)=>{
         if (user[0].isadmin){
             db.getUserById(req.params.id,(resDB)=>{
                 if(resDB.length > 0){
@@ -112,7 +112,7 @@ router.delete('/:id', (req, res) => {
 })
 
 router.put('/:id', (req, res) => {
-    checkAPIKey((user)=>{
+    test.checkAPIKey(req,res,(user)=>{
         if (user[0].isadmin){
             db.getUserById(req.params.id,(resDB)=>{
                 if(resDB.length > 0){
@@ -179,9 +179,10 @@ router.put('/', (req, res) => {
     }
 })
 
+ 
 
+module.exports = router
 
-module.exports = router;
 
 
 // Radieyshn - f3af6abb-4f29-4fc3-b8fa-f9d3fd0f7e46
