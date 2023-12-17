@@ -70,6 +70,12 @@ router.post('/', (req, res) => {
         }
         if(!difficulty){
             difficulty = 0
+        } 
+        if (!category){
+            return res.json({
+                code:400,  
+                message: "Category must exits" 
+            }).status(400) 
         }
         db.getCategoryById(category,(resDB)=>{
             if(resDB.length < 1){
@@ -99,6 +105,24 @@ router.get('/', (req, res) => {
                 code: 400,
                 message: "Limit must exist"
             }).status(400)
+        }
+        if(!Number(limit) && limit != undefined){
+            return res.json({
+                code:400,
+                message: "Limit must be int"
+            }).status(400) 
+        }
+        if(limit > 10 || limit < 1){
+            return res.json({
+                code:400,
+                message: "Limit must be less or equals 10 and more than 0"
+            }).status(400)
+        }
+        if(!Number(difficulty) && difficulty != undefined){
+            return res.json({
+                code:400,
+                message: "Difficulty must be int"
+            }).status(400) 
         }
         if(Number(difficulty) > 3 || Number(difficulty) <= 0){
             return res.json({

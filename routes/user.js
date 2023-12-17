@@ -60,6 +60,24 @@ router.get('/', (req, res) => {
                 message:"You don't have access"
             }).status(403)
         }
+    }) 
+})
+
+router.get("/questions",(req,res) => {
+    console.log("/questions5")
+    test.checkAPIKey(req, res, (user)=>{
+        console.log("CHECKED")
+        console.log(user[0].id)
+        db.getUserQuestions(user[0].id,(questions) => {
+            if(questions.length > 0){
+                return res.json(questions).status(200);
+            } else {
+                return res.json({
+                    code:404,
+                    message: "Questions don't exist"  
+                }).status(404);   
+            }
+        })
     })
 })
 
@@ -119,14 +137,15 @@ router.put('/:id', (req, res) => {
                     const username  = req.body.username
                     const firstName  = req.body.firstname
                     const lastName = req.body.lastname
-                    const isAdmin = req.body.isAdmin
-                    if(typeof isAdmin==="boolean"){
+                    let isAdmin = req.body.isAdmin
+                    if(typeof isAdmin==="boolean" || isAdmin == undefined){
+                        isAdmin = false
                         db.updateUser(req.params.id,username,firstName,lastName,isAdmin)
                         res.json({
                             code:200,
                             message: 'User has been updated'
                         }).status(200)
-                    }else{
+                    }else if(typeof isAdmin !="boolean" && isAdmin != undefined){
                         res.json({
                             code:400,
                             message:'isAdmin must be boolean'
@@ -151,39 +170,52 @@ router.put('/:id', (req, res) => {
 })
 
 router.put('/', (req, res) => {
-    if(req.headers.apikey){
-        db.getUserByApiKey(req.headers.apikey, (user) => {
-            if(user.length > 0){       
-                const username  = req.body.username
-                const firstName  = req.body.firstname
-                const lastName = req.body.lastname
-                
-                db.updateUser(user[0].id,username,firstName,lastName)
-                res.json({
-                    code:200,
-                    message: 'User has been updated'
-                }).status(200) 
-
-            } else {
-                res.json({
-                    code:403,
-                    message:"APIKey is invalid"
-                }).status(403)
-            }
-        })
-    } else {
-        res.json({
-            code:403,
-            message:"APIKey required"
-        }).status(403)
-    }
+    test.checkAPIKey(req,res,(user)=>{
+        const username  = req.body.username
+        const firstName  = req.body.firstname
+        const lastName = req.body.lastname
+        
+        db.updateUser(user[0].id,username,firstName,lastName)
+        return res.json({
+            code:200,
+            message: 'User has been updated'
+        }).status(200)
+    })
+})
+ 
+router.get("/:id/questions",(req,res)=>{
+    test.checkAPIKey(req, res, (user) => {
+        if(user[0].isadmin){
+            db.getUserById(req.params.id, (tgUser) => {
+                if(tgUser.length > 0){
+                    db.getUserQuestions(req.params.id, (questions)=>{
+                        if(questions.length > 0){
+                            return res.json(questions).status(200);
+                        } else {
+                            return res.json({
+                                code:404,
+                                message: "Questions don't exist"  
+                            }).status(404);   
+                        }
+                    })
+                } else {
+                    return res.json({
+                        code:404,
+                        message: "User does not exist"  
+                    }).status(404);  
+                }
+            })
+        } else {
+            res.json({
+                code:403,
+                message:"You don't have access"
+            }).status(403)
+        }
+    })
 })
 
- 
-
 module.exports = router
-
-
+ 
 
 // Radieyshn - f3af6abb-4f29-4fc3-b8fa-f9d3fd0f7e46
 // Admin - dba963a2-d81d-423c-a6c8-efebaf584525

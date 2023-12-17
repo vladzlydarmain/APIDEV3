@@ -68,7 +68,7 @@ router.delete('/:id', (req, res) => {
             }).status(400)
         }
         db.getCategoryById(req.params.id, (category) => {
-            if(!category){
+            if(category.length <= 0){
                 return res.json({
                     code:404,
                     message: "Category does not exist"
@@ -115,6 +115,51 @@ router.put('/:id', (req, res) => {
     })
 }) 
 
+router.get("/:id/meta",(req,res)=>{
+    test.checkAPIKey(req, res, (user) => {
+        db.getCategoryById(req.params.id,(category)=>{
+            if(category.length > 0){
+                db.getQuestionsByCategory(req.params.id, (questions) => {
+                    return res.json({
+                        name:category[0].name,
+                        count:questions.length
+                    })
+                })
+            }else{
+                return res.json({
+                    code:404,
+                    message: "Category does not exist"
+                })
+            }
+        })
+    })
+})
 
+router.get("/meta", (req,res)=>{
+    test.checkAPIKey(req, res, (user) => {
+        db.getAllCategories((resDB)=>{
+            if(resDB.length > 0){
+                let response = []
+                for(let category of resDB){
+                    db.getQuestionsByCategory(category.id,(questions)=>{
+                        console.log(1111111)
+                        response.push({
+                            name:category.name,
+                            count:questions.length
+                        })
+                        if(response.length == resDB.length){
+                            return res.json(response).status(200)
+                        }
+                    })
+                }
+            }else{
+                return res.json({
+                    code:404,
+                    message: "Category does not exist"
+                })
+            }
+        })
+    })
+})
 
 module.exports = router

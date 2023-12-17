@@ -1,11 +1,7 @@
 const { Client } = require('pg')
 
 const app = new Client({
-    user: process.env.USER,
-    host: process.env.HOST,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
-    port: process.env.PORT1
+    
 })
 
 app.connect()
@@ -69,7 +65,7 @@ function getUserByApiKey(APIKey, callback){
 }
 
 function getUserById(id, callback){
-    const query = `SELECT * FROM "User" WHERE id = ${id}`
+    const query = `SELECT * FROM "User" WHERE id = '${id}'`
     app.query(query, (err, res) => {
         console.log(err)
         console.log(res.rows)
@@ -235,6 +231,22 @@ function updateQuestion(id, question, correctAnswer, incorrectAnswers, difficult
     })
 }
  
+function getUserQuestions(id, callback){
+    const query = `SELECT * FROM "Questions" WHERE creator = '${id}'`
+    app.query(query, (err, res) => {
+        console.log(err)
+        callback(res.rows)
+    })
+}
+
+function getQuestionsByCategory(id, callback){
+    const query = `SELECT * FROM "Questions" WHERE category = '${id}'`
+    app.query(query, (err, res) => {
+        console.log(err)
+        callback(res.rows)
+    })
+}
+
 // createTableUser()
 // createTableCategories()    
 // createTableQuestions()        
@@ -255,5 +267,7 @@ module.exports = {
     getRandomQuestions:getRandomQuestions,
     getQuestionById:getQuestionById,
     deleteQuestionById:deleteQuestionById,
-    updateQuestion:updateQuestion
+    updateQuestion:updateQuestion,
+    getUserQuestions:getUserQuestions,
+    getQuestionsByCategory:getQuestionsByCategory
 }

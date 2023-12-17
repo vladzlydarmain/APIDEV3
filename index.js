@@ -16,7 +16,6 @@ app.use('/user', routerUser)
 app.use('/category', routerCategory)
 app.use('/question', routerQuestion)
 
-const port = process.env.PORT  
 
 app.listen(port, () => {
     console.log('listening on port')
